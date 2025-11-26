@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://localhost:7025/api';
+const API_BASE_URL = 'https://financeappapi20251127002615-azfub8enbheycvcs.malaysiawest-01.azurewebsites.net/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
