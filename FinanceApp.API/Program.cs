@@ -51,16 +51,26 @@ builder.Services.AddSwaggerGen(c =>
 
 
 // Database configuration - using SQL Server
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+Console.WriteLine($"Configuring database with connection string: {(string.IsNullOrEmpty(connectionString) ? "NOT SET" : "SET (length: " + connectionString.Length + ")")}");
+
 builder.Services.AddDbContext<FinanceDbContext>(options =>
+{
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
+        connectionString,
         sqlServerOptions => sqlServerOptions.EnableRetryOnFailure()
-    )
-);
+    );
+    options.EnableSensitiveDataLogging(builder.Environment.IsDevelopment());
+    options.EnableDetailedErrors();
+});
 
 // JWT Authentication configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"] ?? "YourSuperSecretKeyHere_ChangeInProduction_AtLeast32Characters";
+Console.WriteLine($"JWT Issuer: {jwtSettings["Issuer"] ?? "NOT SET"}");
+Console.WriteLine($"JWT Audience: {jwtSettings["Audience"] ?? "NOT SET"}");
+Console.WriteLine($"JWT Secret Key: {(string.IsNullOrEmpty(secretKey) ? "NOT SET" : "SET (length: " + secretKey.Length + ")")}");
+
 
 builder.Services.AddAuthentication(options =>
 {
@@ -105,10 +115,43 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Add detailed error logging for debugging
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+// Global exception handler middleware
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unhandled exception occurred. Path: {Path}, Method: {Method}",
+            context.Request.Path, context.Request.Method);
+
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
+
+        var errorResponse = new
+        {
+            error = "An internal server error occurred",
+            message = app.Environment.IsDevelopment() ? ex.Message : "Please contact support",
+            path = context.Request.Path.ToString()
+        };
+
+        await context.Response.WriteAsJsonAsync(errorResponse);
+    }
+});
+
+// Log startup information
+logger.LogInformation("Finance App API starting...");
+logger.LogInformation("Environment: {Environment}", app.Environment.EnvironmentName);
+
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
 //{
-  
+
 //}
 
 app.UseSwagger();
@@ -130,5 +173,31 @@ app.MapControllers();
 
 app.MapGet("/health", () => Results.Ok(new { status = "Healthy", timestamp = DateTime.UtcNow }));
 
+app.MapGet("/health/db", async (FinanceDbContext dbContext) =>
+{
+    try
+    {
+        var canConnect = await dbContext.Database.CanConnectAsync();
+        return Results.Ok(new
+        {
+            status = canConnect ? "Connected" : "Cannot connect",
+            timestamp = DateTime.UtcNow,
+            database = dbContext.Database.GetDbConnection().Database
+        });
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Database health check failed");
+        return Results.Json(new
+        {
+            status = "Error",
+            message = ex.Message,
+            innerException = ex.InnerException?.Message,
+            timestamp = DateTime.UtcNow
+        }, statusCode: 500);
+    }
+});
+
+logger.LogInformation("Application configured successfully. Starting...");
 
 app.Run();
