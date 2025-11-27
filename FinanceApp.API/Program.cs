@@ -96,7 +96,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:5176") // React dev server
+        policy.WithOrigins("http://localhost:3000", "https://finance-app-five-wine.vercel.app") // React dev server
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
