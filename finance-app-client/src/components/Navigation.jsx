@@ -44,7 +44,7 @@ const Navigation = () => {
   return (
     <>
       {/* Top Header - Visible on all screen sizes */}
-      <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200 sticky top-0 z-40">
+      <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200 sticky top-0 z-40 mb-6">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3">
           <div className="flex justify-between items-center">
             {/* Logo and Brand */}
