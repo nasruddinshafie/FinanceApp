@@ -165,7 +165,7 @@ const Navigation = () => {
       </nav>
 
       {/* Spacer to prevent content from being hidden behind bottom nav */}
-      <div className="h-16 sm:h-18"></div>
+      <div className="h-24 sm:h-28"></div>
     </>
   );
 };
