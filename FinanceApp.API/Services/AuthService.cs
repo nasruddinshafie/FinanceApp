@@ -120,7 +120,7 @@ namespace FinanceApp.API.Services
             var secretKey = jwtSettings["SecretKey"] ?? "YourSuperSecretKeyHere_ChangeInProduction_AtLeast32Characters";
             var issuer = jwtSettings["Issuer"] ?? "FinanceAppAPI";
             var audience = jwtSettings["Audience"] ?? "FinanceAppClient";
-            var expiryMinutes = int.Parse(jwtSettings["ExpiryMinutes"] ?? "60");
+            var expiryHours = int.Parse(jwtSettings["ExpiryInHours"] ?? "24");
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -137,7 +137,7 @@ namespace FinanceApp.API.Services
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
+                expires: DateTime.UtcNow.AddHours(expiryHours),
                 signingCredentials: credentials
             );
 
