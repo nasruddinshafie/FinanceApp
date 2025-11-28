@@ -266,6 +266,12 @@ const Dashboard = () => {
                             })}
                           </span>
                         </p>
+                        <p className="text-xs sm:text-sm text-gray-500 font-medium flex flex-wrap items-center gap-1 sm:gap-2">
+                           <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 text-xs">
+                              From account : {transaction.accountName}
+                          </span>
+                          
+                        </p>
                       </div>
                     </div>
                     <p
